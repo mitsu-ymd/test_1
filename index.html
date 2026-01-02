@@ -2,490 +2,1796 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Simple Site</title>
-  <meta name="description" content="白背景のシンプルでおしゃれな1ページサイト" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Prompt Studio - プロンプト生成Webアプリ</title>
+  <meta name="description" content="テンプレと入力項目から高品質なプロンプトを生成。履歴・コピー・ダウンロード・テンプレ管理対応。" />
   <style>
     :root{
-      color-scheme: light;
-
-      /* Design tokens */
-      --bg: #ffffff;
-      --text: #0b1220;
-      --muted: #5b6475;
-      --line: rgba(15, 23, 42, .12);
-      --card: rgba(255,255,255,.9);
-
-      --shadow: 0 14px 35px rgba(2, 6, 23, .10);
-      --shadow-sm: 0 8px 18px rgba(2, 6, 23, .08);
-
+      --bg:#0b1020;
+      --panel:#0f1733;
+      --panel2:#0c132a;
+      --text:#e8ecff;
+      --muted:#aeb7df;
+      --line:rgba(255,255,255,.10);
+      --brand:#7aa2ff;
+      --brand2:#68e0ff;
+      --good:#3ddc97;
+      --warn:#ffcc66;
+      --bad:#ff6b6b;
+      --shadow: 0 18px 50px rgba(0,0,0,.45);
       --radius: 18px;
-      --radius-lg: 26px;
-
-      /* Accent (控えめに) */
-      --accent1: #4f46e5; /* indigo */
-      --accent2: #06b6d4; /* cyan */
-      --accent3: #22c55e; /* green */
+      --radius2: 14px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "Yu Gothic", Meiryo, Arial, "Noto Sans JP", sans-serif;
+    }
+    [data-theme="light"]{
+      --bg:#f4f7ff;
+      --panel:#ffffff;
+      --panel2:#f7f9ff;
+      --text:#0b1533;
+      --muted:#4b5578;
+      --line:rgba(0,0,0,.10);
+      --brand:#3f6fff;
+      --brand2:#08a1c7;
+      --shadow: 0 18px 50px rgba(10,20,50,.12);
     }
 
-    *{ box-sizing: border-box; }
-    html{ scroll-behavior: smooth; }
+    *{box-sizing:border-box}
+    html,body{height:100%}
     body{
-      margin: 0;
-      background: var(--bg);
-      color: var(--text);
-      font-family: system-ui, -apple-system, "Segoe UI", "Noto Sans JP", sans-serif;
-      line-height: 1.7;
-      letter-spacing: .01em;
+      margin:0;
+      font-family:var(--sans);
+      background:
+        radial-gradient(1200px 700px at 10% 0%, rgba(122,162,255,.30), transparent 60%),
+        radial-gradient(900px 650px at 90% 20%, rgba(104,224,255,.18), transparent 60%),
+        radial-gradient(900px 700px at 50% 110%, rgba(61,220,151,.14), transparent 60%),
+        var(--bg);
+      color:var(--text);
+      overflow-x:hidden;
     }
 
-    /* Subtle background glow */
-    .bg-glow{
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: -1;
-    }
-    .bg-glow::before,
-    .bg-glow::after{
-      content:"";
-      position: absolute;
-      width: 520px;
-      height: 520px;
-      border-radius: 999px;
-      filter: blur(60px);
-      opacity: .18;
-      transform: translate3d(0,0,0);
-    }
-    .bg-glow::before{
-      top: -200px;
-      right: -220px;
-      background: radial-gradient(circle at 30% 30%, var(--accent2), transparent 60%),
-                  radial-gradient(circle at 70% 70%, var(--accent1), transparent 60%);
-    }
-    .bg-glow::after{
-      bottom: -240px;
-      left: -240px;
-      background: radial-gradient(circle at 30% 30%, var(--accent3), transparent 62%),
-                  radial-gradient(circle at 70% 70%, var(--accent2), transparent 62%);
+    a{color:inherit}
+
+    .app{
+      max-width:1200px;
+      margin:0 auto;
+      padding:18px 18px 30px;
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+      min-height:100%;
     }
 
-    .wrap{
-      max-width: 1024px;
-      margin: 0 auto;
-      padding: 28px 18px 56px;
-    }
-
-    /* Top bar */
-    .topbar{
+    header{
       display:flex;
       align-items:center;
       justify-content:space-between;
-      gap: 16px;
-      padding: 10px 6px 22px;
+      gap:12px;
+      padding:14px 16px;
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+      box-shadow:var(--shadow);
+      backdrop-filter: blur(8px);
     }
+
     .brand{
       display:flex;
       align-items:center;
-      gap: 10px;
-      font-weight: 800;
-      letter-spacing: .02em;
+      gap:12px;
+      min-width:240px;
     }
     .logo{
-      width: 34px;
-      height: 34px;
-      border-radius: 12px;
-      background:
-        linear-gradient(135deg, rgba(79,70,229,.95), rgba(6,182,212,.9));
-      box-shadow: 0 10px 25px rgba(79,70,229,.18);
+      width:42px;height:42px;border-radius:14px;
+      background: radial-gradient(circle at 30% 25%, rgba(255,255,255,.18), transparent 40%),
+                  linear-gradient(135deg, var(--brand), var(--brand2));
+      box-shadow: 0 12px 24px rgba(0,0,0,.22);
+      border:1px solid rgba(255,255,255,.12);
     }
-    nav a{
-      color: var(--muted);
-      text-decoration:none;
-      font-size: 14px;
-      padding: 8px 10px;
-      border-radius: 999px;
-      transition: background .2s ease, color .2s ease;
+    .title{
+      display:flex;flex-direction:column;line-height:1.2;
     }
-    nav a:hover{
-      background: rgba(2,6,23,.05);
-      color: var(--text);
-    }
-
-    /* Hero */
-    .hero{
-      position: relative;
-      border: 1px solid var(--line);
-      border-radius: var(--radius-lg);
-      background: linear-gradient(180deg, rgba(255,255,255,.86), rgba(255,255,255,.72));
-      box-shadow: var(--shadow);
-      overflow: hidden;
-      padding: 26px 22px;
-    }
-    .hero::before{
-      content:"";
-      position:absolute;
-      inset: -2px;
-      background: linear-gradient(135deg, rgba(79,70,229,.18), rgba(6,182,212,.14), rgba(34,197,94,.12));
-      z-index: 0;
-    }
-    .hero-inner{
-      position: relative;
-      z-index: 1;
-      border-radius: calc(var(--radius-lg) - 6px);
-      background: rgba(255,255,255,.86);
-      border: 1px solid rgba(255,255,255,.65);
-      padding: 26px 22px;
-      backdrop-filter: blur(10px);
-    }
-
-    .badge{
-      display:inline-flex;
-      align-items:center;
-      gap: 8px;
-      font-size: 12px;
-      color: rgba(15,23,42,.75);
-      border: 1px solid rgba(15,23,42,.12);
-      background: rgba(255,255,255,.8);
-      padding: 6px 10px;
-      border-radius: 999px;
-    }
-    .dot{
-      width: 8px; height: 8px;
-      border-radius: 99px;
-      background: linear-gradient(135deg, var(--accent1), var(--accent2));
-      box-shadow: 0 0 0 4px rgba(79,70,229,.12);
-    }
-
-    h1{
-      margin: 12px 0 8px;
-      font-size: clamp(26px, 3.2vw, 40px);
-      line-height: 1.2;
-      letter-spacing: .01em;
-    }
-    .lead{
-      margin: 0 0 18px;
-      color: var(--muted);
-      font-size: 15px;
-      max-width: 62ch;
-    }
-
-    .actions{
-      display:flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 10px;
+    .title b{font-size:16px}
+    .title span{font-size:12px;color:var(--muted)}
+    .top-actions{
+      display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;
     }
 
     .btn{
+      appearance:none;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:14px;
+      cursor:pointer;
+      font-weight:600;
+      letter-spacing:.02em;
+      transition:.15s transform, .15s background, .15s border;
       display:inline-flex;
       align-items:center;
-      justify-content:center;
-      gap: 10px;
-      padding: 10px 14px;
-      border-radius: 12px;
-      font-size: 14px;
-      font-weight: 700;
-      text-decoration:none;
-      border: 1px solid var(--line);
-      cursor:pointer;
-      transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+      gap:8px;
       user-select:none;
-      -webkit-tap-highlight-color: transparent;
     }
-    .btn:active{ transform: translateY(1px); }
-
-    .btn-primary{
-      color: #fff;
-      border-color: rgba(79,70,229,.2);
-      background: linear-gradient(135deg, var(--accent1), var(--accent2));
-      box-shadow: 0 10px 24px rgba(79,70,229,.22);
+    .btn:hover{transform:translateY(-1px); background:rgba(255,255,255,.10)}
+    .btn:active{transform:translateY(0px)}
+    .btn.primary{
+      background:linear-gradient(135deg, rgba(122,162,255,.95), rgba(104,224,255,.85));
+      color:#061026;
+      border-color:transparent;
     }
-    .btn-primary:hover{ box-shadow: 0 14px 30px rgba(79,70,229,.26); }
-
-    .btn-ghost{
-      color: var(--text);
-      background: rgba(255,255,255,.75);
-    }
-    .btn-ghost:hover{
-      background: rgba(2,6,23,.04);
-      box-shadow: var(--shadow-sm);
+    [data-theme="light"] .btn.primary{color:#061026}
+    .btn.ghost{background:transparent}
+    .btn.danger{background:rgba(255,107,107,.12); border-color:rgba(255,107,107,.35); color:var(--text)}
+    .btn.good{background:rgba(61,220,151,.12); border-color:rgba(61,220,151,.35)}
+    .btn.small{padding:8px 10px;border-radius:12px;font-size:12px}
+    .btn.icon{
+      width:42px;height:42px;justify-content:center;
     }
 
-    .icon{
-      width: 16px;
-      height: 16px;
-      display:inline-block;
-    }
-
-    /* Sections */
     .grid{
       display:grid;
-      grid-template-columns: 1.1fr .9fr;
-      gap: 16px;
-      margin-top: 16px;
+      grid-template-columns: 360px 1fr;
+      gap:16px;
+      flex:1;
+      min-height:0;
     }
-    @media (max-width: 860px){
-      .grid{ grid-template-columns: 1fr; }
+
+    @media (max-width: 980px){
+      .grid{grid-template-columns:1fr}
+      header{flex-wrap:wrap}
+      .brand{min-width:auto}
+      .top-actions{justify-content:flex-start}
     }
 
     .card{
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.82);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow-sm);
-      padding: 18px 16px;
-    }
-    .card h2{
-      margin: 0 0 6px;
-      font-size: 16px;
-      letter-spacing: .01em;
-    }
-    .card p{
-      margin: 0;
-      color: var(--muted);
-      font-size: 14px;
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      min-height:0;
     }
 
-    .feature-list{
-      margin: 12px 0 0;
-      padding: 0;
-      list-style: none;
-      display:grid;
-      gap: 10px;
-    }
-    .feature{
+    .card .head{
+      padding:14px 14px 12px;
       display:flex;
-      gap: 12px;
-      align-items:flex-start;
-      padding: 12px 12px;
-      border-radius: 14px;
-      border: 1px solid rgba(15,23,42,.10);
-      background: rgba(255,255,255,.76);
-    }
-    .feature b{
-      display:block;
-      margin-bottom: 2px;
-      font-size: 14px;
-    }
-    .feature span{
-      color: var(--muted);
-      font-size: 13px;
-      display:block;
-    }
-    .feature .pill{
-      flex: 0 0 auto;
-      width: 34px;
-      height: 34px;
-      border-radius: 12px;
-      display:grid;
-      place-items:center;
-      background: linear-gradient(135deg, rgba(79,70,229,.14), rgba(6,182,212,.12));
-      border: 1px solid rgba(79,70,229,.18);
-    }
-
-    /* Contact */
-    .contact{
-      display:flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 12px;
       align-items:center;
-    }
-    .contact a{
-      color: var(--text);
-      text-decoration:none;
-      border-bottom: 1px dashed rgba(2,6,23,.25);
-    }
-    .contact a:hover{
-      border-bottom-color: rgba(2,6,23,.6);
-    }
-    .small{
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 8px;
-    }
-
-    footer{
-      margin-top: 24px;
-      padding-top: 16px;
-      border-top: 1px solid var(--line);
-      display:flex;
       justify-content:space-between;
-      gap: 12px;
-      color: var(--muted);
-      font-size: 12px;
-      flex-wrap: wrap;
+      gap:10px;
+      border-bottom:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+    }
+    .card .head h2{
+      margin:0;
+      font-size:13px;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+      color:var(--muted);
+    }
+    .card .body{
+      padding:14px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      min-height:0;
     }
 
-    /* Reduced motion */
-    @media (prefers-reduced-motion: reduce){
-      html{ scroll-behavior: auto; }
-      .btn{ transition: none; }
+    .row{display:flex;gap:10px;flex-wrap:wrap}
+    .row > *{flex:1}
+    .row.tight > *{flex:0}
+
+    .field{
+      display:flex;flex-direction:column;gap:6px;
     }
+    label{
+      font-size:12px;
+      color:var(--muted);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+    }
+    .hint{
+      font-size:11px;
+      color:var(--muted);
+      opacity:.85;
+    }
+    input,select,textarea{
+      width:100%;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:14px;
+      outline:none;
+      transition:.15s border, .15s background;
+      font-size:14px;
+    }
+    textarea{
+      min-height:90px;
+      resize:vertical;
+      font-family:var(--sans);
+      line-height:1.5;
+    }
+    input:focus,select:focus,textarea:focus{
+      border-color:rgba(122,162,255,.55);
+      background:rgba(255,255,255,.06);
+    }
+    [data-theme="light"] input,
+    [data-theme="light"] select,
+    [data-theme="light"] textarea{
+      background:#f4f7ff;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      color:var(--muted);
+      font-size:12px;
+      user-select:none;
+    }
+    .kbd{
+      font-family:var(--mono);
+      font-size:11px;
+      padding:2px 6px;
+      border-radius:8px;
+      border:1px solid var(--line);
+      color:var(--muted);
+      background:rgba(255,255,255,.03);
+    }
+
+    .list{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      min-height:0;
+      overflow:auto;
+      padding-right:4px;
+    }
+    .item{
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+      border-radius:var(--radius2);
+      padding:12px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      cursor:pointer;
+      transition:.15s transform,.15s background,.15s border;
+    }
+    .item:hover{transform:translateY(-1px); background:rgba(255,255,255,.06)}
+    .item.active{border-color:rgba(122,162,255,.55); background:rgba(122,162,255,.10)}
+    .item .top{display:flex; align-items:flex-start; justify-content:space-between; gap:10px}
+    .item b{font-size:14px}
+    .item small{color:var(--muted); font-size:11px}
+    .tags{display:flex; gap:6px; flex-wrap:wrap}
+    .tag{
+      font-size:11px;
+      padding:3px 8px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      color:var(--muted);
+      background:rgba(255,255,255,.03);
+    }
+
+    .split{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:12px;
+      min-height:0;
+    }
+
+    .output{
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      min-height:0;
+    }
+    .output .bar{
+      padding:12px 14px;
+      border-bottom:1px solid var(--line);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      background:rgba(255,255,255,.03);
+      flex-wrap:wrap;
+    }
+    .output .bar .left{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .output .bar .left b{
+      font-size:13px;
+      letter-spacing:.05em;
+      color:var(--muted);
+      text-transform:uppercase;
+    }
+    .output pre{
+      margin:0;
+      padding:14px;
+      overflow:auto;
+      min-height:220px;
+      max-height:520px;
+      font-family:var(--mono);
+      font-size:12.8px;
+      line-height:1.55;
+      white-space:pre-wrap;
+      word-break:break-word;
+      background:transparent;
+      color:var(--text);
+    }
+
+    .toast{
+      position:fixed;
+      right:18px;
+      bottom:18px;
+      padding:12px 14px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background:rgba(20,30,60,.85);
+      color:var(--text);
+      box-shadow:var(--shadow);
+      backdrop-filter: blur(8px);
+      transform: translateY(12px);
+      opacity:0;
+      pointer-events:none;
+      transition:.18s opacity,.18s transform;
+      max-width:min(560px, calc(100vw - 36px));
+    }
+    [data-theme="light"] .toast{background:rgba(255,255,255,.92)}
+    .toast.show{opacity:1; transform:translateY(0)}
+    .toast .t{font-weight:700; margin-right:10px}
+    .toast .m{color:var(--muted)}
+
+    .modal-backdrop{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.45);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+      z-index:50;
+    }
+    .modal-backdrop.show{display:flex}
+    .modal{
+      width:min(900px, 100%);
+      max-height:min(92vh, 900px);
+      overflow:auto;
+      border-radius:20px;
+      border:1px solid var(--line);
+      background:var(--panel);
+      box-shadow:var(--shadow);
+    }
+    .modal .mhead{
+      padding:14px 14px 12px;
+      border-bottom:1px solid var(--line);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .modal .mhead b{font-size:14px}
+    .modal .mbody{padding:14px; display:flex; flex-direction:column; gap:12px}
+
+    .two{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+    }
+    @media (max-width: 980px){
+      .two{grid-template-columns:1fr}
+    }
+
+    .footer-note{
+      color:var(--muted);
+      font-size:12px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      padding:0 4px;
+    }
+
+    .mono{font-family:var(--mono)}
+    .muted{color:var(--muted)}
   </style>
 </head>
 
 <body>
-  <div class="bg-glow" aria-hidden="true"></div>
-
-  <div class="wrap">
-    <div class="topbar">
-      <div class="brand">
+  <div class="app" id="app" data-theme="dark">
+    <header>
+      <div class="brand" title="Prompt Studio">
         <div class="logo" aria-hidden="true"></div>
-        <div>Simple Site</div>
-      </div>
-      <nav aria-label="メニュー">
-        <a href="#about">概要</a>
-        <a href="#features">特徴</a>
-        <a href="#contact">連絡</a>
-      </nav>
-    </div>
-
-    <section class="hero" aria-label="ヒーロー">
-      <div class="hero-inner">
-        <div class="badge"><span class="dot" aria-hidden="true"></span> GitHub Pages で公開中</div>
-
-        <h1>白背景のまま、<br />上品に“おしゃれ”な1ページ</h1>
-        <p class="lead">
-          余白・影・控えめなグラデーションで、シンプルなのに雰囲気が出るデザインです。
-          文章やリンクを差し替えるだけで、名刺代わりのサイトになります。
-        </p>
-
-        <div class="actions">
-          <a class="btn btn-primary" href="#contact">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M4 6h16v12H4V6Z" stroke="white" stroke-width="2" />
-              <path d="m4 7 8 6 8-6" stroke="white" stroke-width="2" />
-            </svg>
-            連絡する
-          </a>
-
-          <button class="btn btn-ghost" type="button" onclick="hello()">
-            <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M12 21s7-4.35 7-11a4 4 0 0 0-7-2 4 4 0 0 0-7 2c0 6.65 7 11 7 11Z" stroke="currentColor" stroke-width="2"/>
-            </svg>
-            ボタン
-          </button>
+        <div class="title">
+          <b>Prompt Studio</b>
+          <span>テンプレ×入力で、すぐ使えるプロンプトを生成</span>
         </div>
-
-        <p class="small">※文言は自由に変更できます（このままでも動きます）。</p>
       </div>
-    </section>
+
+      <div class="top-actions">
+        <button class="btn" id="btnTheme" type="button" title="ライト/ダーク切替 (T)">
+          🌗 テーマ
+        </button>
+        <button class="btn" id="btnManage" type="button" title="テンプレ管理 (M)">
+          🧩 テンプレ管理
+        </button>
+        <button class="btn" id="btnImportExport" type="button" title="インポート/エクスポート (I)">
+          ⬆⬇ JSON
+        </button>
+        <button class="btn primary" id="btnGenerate" type="button" title="生成 (Ctrl/⌘ + Enter)">
+          ⚡ 生成
+        </button>
+      </div>
+    </header>
 
     <div class="grid">
-      <section id="about" class="card" aria-label="概要">
-        <h2>概要</h2>
-        <p>
-          ここに自己紹介やサイトの目的を書きます。たとえば「仕事の実績」「趣味」「連絡先」など。
-          文章は短めにすると、より洗練されて見えます。
-        </p>
+      <!-- LEFT: Templates + History -->
+      <section class="card" aria-label="テンプレと履歴">
+        <div class="head">
+          <h2>Templates</h2>
+          <div class="row tight">
+            <span class="pill" title="ショートカット: /で検索にフォーカス">
+              🔎 <span class="kbd">/</span> 検索
+            </span>
+          </div>
+        </div>
 
-        <ul class="feature-list" style="margin-top:14px;">
-          <li class="feature">
-            <div class="pill" aria-hidden="true">
-              <svg class="icon" viewBox="0 0 24 24" fill="none">
-                <path d="M7 12l3 3 7-7" stroke="currentColor" stroke-width="2" />
-              </svg>
+        <div class="body">
+          <div class="field">
+            <label for="searchTemplate">テンプレ検索 <span class="hint">名前/タグ/概要</span></label>
+            <input id="searchTemplate" type="text" placeholder="例: ブログ / 仕様 / メール / 要約 ..." autocomplete="off" />
+          </div>
+
+          <div class="row">
+            <div class="field">
+              <label for="filterCategory">カテゴリ</label>
+              <select id="filterCategory">
+                <option value="all">すべて</option>
+              </select>
             </div>
-            <div>
-              <b>シンプル運用</b>
-              <span>HTMLを編集してコミットするだけで、自動で反映されます。</span>
+            <div class="field">
+              <label for="filterLang">言語</label>
+              <select id="filterLang">
+                <option value="ja">日本語</option>
+                <option value="en">English</option>
+                <option value="any">指定しない</option>
+              </select>
             </div>
-          </li>
-          <li class="feature">
-            <div class="pill" aria-hidden="true">
-              <svg class="icon" viewBox="0 0 24 24" fill="none">
-                <path d="M12 3v18" stroke="currentColor" stroke-width="2"/>
-                <path d="M3 12h18" stroke="currentColor" stroke-width="2"/>
-              </svg>
+          </div>
+
+          <div class="list" id="templateList" aria-label="テンプレ一覧"></div>
+
+          <div class="card" style="border-radius: var(--radius); background:rgba(255,255,255,.02); box-shadow:none;">
+            <div class="head" style="border-radius: var(--radius) var(--radius) 0 0;">
+              <h2>History</h2>
+              <div class="row tight">
+                <button class="btn small danger" id="btnClearHistory" type="button" title="履歴を削除">
+                  🗑 履歴削除
+                </button>
+              </div>
             </div>
-            <div>
-              <b>増やしやすい</b>
-              <span>セクション追加・画像追加・リンク追加が簡単です。</span>
+            <div class="body" style="max-height:260px; overflow:auto;">
+              <div class="list" id="historyList" aria-label="履歴"></div>
+              <div class="footer-note">
+                <span>履歴はこの端末のブラウザに保存されます。</span>
+                <span class="mono muted" id="historyCount"></span>
+              </div>
             </div>
-          </li>
-        </ul>
+          </div>
+        </div>
       </section>
 
-      <section id="features" class="card" aria-label="特徴">
-        <h2>特徴</h2>
-        <p>よく使う要素をまとめてあります。必要に応じて残したり消したりできます。</p>
+      <!-- RIGHT: Inputs + Output -->
+      <main class="split" aria-label="入力と出力">
+        <section class="card">
+          <div class="head">
+            <h2>Inputs</h2>
+            <div class="row tight">
+              <span class="pill" title="ショートカット: Ctrl/⌘+Enterで生成">
+                ⌨ <span class="kbd">Ctrl/⌘</span> + <span class="kbd">Enter</span>
+              </span>
+            </div>
+          </div>
 
-        <ul class="feature-list">
-          <li class="feature">
-            <div class="pill" aria-hidden="true">
-              <svg class="icon" viewBox="0 0 24 24" fill="none">
-                <path d="M4 6h16" stroke="currentColor" stroke-width="2"/>
-                <path d="M4 12h10" stroke="currentColor" stroke-width="2"/>
-                <path d="M4 18h16" stroke="currentColor" stroke-width="2"/>
-              </svg>
+          <div class="body">
+            <div class="row">
+              <div class="field">
+                <label for="goal">目的 <span class="hint">何を達成したいか</span></label>
+                <input id="goal" type="text" placeholder="例: 記事構成を作る / 要点を抽出する / 仕様書を起こす ..." />
+              </div>
+              <div class="field">
+                <label for="audience">対象 <span class="hint">誰向けの出力か</span></label>
+                <input id="audience" type="text" placeholder="例: 初心者 / 上司 / 顧客 / 開発者 ..." />
+              </div>
             </div>
-            <div>
-              <b>読みやすい文字組み</b>
-              <span>見出し・本文・余白のバランスを調整しています。</span>
-            </div>
-          </li>
 
-          <li class="feature">
-            <div class="pill" aria-hidden="true">
-              <svg class="icon" viewBox="0 0 24 24" fill="none">
-                <path d="M12 2 2 7l10 5 10-5-10-5Z" stroke="currentColor" stroke-width="2"/>
-                <path d="M2 17l10 5 10-5" stroke="currentColor" stroke-width="2"/>
-                <path d="M2 12l10 5 10-5" stroke="currentColor" stroke-width="2"/>
-              </svg>
+            <div class="row">
+              <div class="field">
+                <label for="tone">トーン</label>
+                <select id="tone">
+                  <option value="丁寧で明快">丁寧で明快</option>
+                  <option value="カジュアルで親しみやすい">カジュアルで親しみやすい</option>
+                  <option value="プロフェッショナルで簡潔">プロフェッショナルで簡潔</option>
+                  <option value="論理的で厳密">論理的で厳密</option>
+                  <option value="説得力重視">説得力重視</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="format">出力形式</label>
+                <select id="format">
+                  <option value="箇条書き">箇条書き</option>
+                  <option value="ステップ形式">ステップ形式</option>
+                  <option value="表形式">表形式</option>
+                  <option value="文章">文章</option>
+                  <option value="コード">コード</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="length">分量</label>
+                <select id="length">
+                  <option value="短め">短め</option>
+                  <option value="標準" selected>標準</option>
+                  <option value="長め">長め</option>
+                </select>
+              </div>
             </div>
-            <div>
-              <b>カードUI</b>
-              <span>影と境界線で、軽やかな情報整理ができます。</span>
-            </div>
-          </li>
 
-          <li class="feature">
-            <div class="pill" aria-hidden="true">
-              <svg class="icon" viewBox="0 0 24 24" fill="none">
-                <path d="M12 8v8" stroke="currentColor" stroke-width="2"/>
-                <path d="M8 12h8" stroke="currentColor" stroke-width="2"/>
-                <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke="currentColor" stroke-width="2"/>
-              </svg>
+            <div class="field">
+              <label for="context">背景/前提 <span class="hint">材料（要点・制約・状況）</span></label>
+              <textarea id="context" placeholder="例:
+- 前提:
+- 必要な要素:
+- 使うツール/環境:
+- NG事項:"></textarea>
             </div>
-            <div>
-              <b>控えめアクセント</b>
-              <span>白背景のまま、雰囲気だけ上げています。</span>
+
+            <div class="row">
+              <div class="field">
+                <label for="constraints">制約・ルール <span class="hint">必ず守ってほしい条件</span></label>
+                <textarea id="constraints" placeholder="例:
+- 専門用語は噛み砕く
+- 数値は根拠を添える
+- 箇条書き + 例を含める"></textarea>
+              </div>
+              <div class="field">
+                <label for="examples">参考例/入力データ <span class="hint">文章/ログ/データ</span></label>
+                <textarea id="examples" placeholder="例:
+（ここに文章やデータを貼り付け）"></textarea>
+              </div>
             </div>
-          </li>
-        </ul>
-      </section>
+
+            <div class="row">
+              <button class="btn good" id="btnQuickFill" type="button" title="サンプル入力を自動で入れる">
+                ✨ サンプル入力
+              </button>
+              <button class="btn" id="btnResetInputs" type="button" title="入力をクリア">
+                🧹 入力クリア
+              </button>
+              <button class="btn" id="btnCopyOutput2" type="button" title="出力をコピー">
+                📋 出力コピー
+              </button>
+            </div>
+
+            <div class="footer-note">
+              <span>現在のテンプレ: <b id="activeTemplateName">-</b></span>
+              <span class="mono muted" id="autosaveState">autosave: on</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="output" aria-label="生成結果">
+          <div class="bar">
+            <div class="left">
+              <b>Generated Prompt</b>
+              <span class="pill" id="metaPill">—</span>
+            </div>
+            <div class="row tight" style="gap:8px;">
+              <button class="btn small" id="btnCopyOutput" type="button" title="コピー (C)">
+                📋 コピー
+              </button>
+              <button class="btn small" id="btnDownload" type="button" title="TXTとして保存 (D)">
+                ⬇ TXT
+              </button>
+              <button class="btn small ghost" id="btnAddToHistory" type="button" title="履歴に保存 (H)">
+                ➕ 履歴
+              </button>
+            </div>
+          </div>
+          <pre id="output" class="mono" aria-label="出力" spellcheck="false"></pre>
+        </section>
+      </main>
     </div>
 
-    <section id="contact" class="card" aria-label="連絡" style="margin-top:16px;">
-      <h2>連絡</h2>
-      <p>連絡先はここを編集してください。</p>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-      <div class="contact" style="margin-top:10px;">
-        <span>メール：</span>
-        <a href="mailto:example@example.com">example@example.com</a>
-        <span style="color:rgba(15,23,42,.20);">|</span>
-        <a href="https://github.com/" target="_blank" rel="noopener noreferrer">GitHub</a>
+    <!-- MODAL: Manage Templates -->
+    <div class="modal-backdrop" id="manageModalBackdrop" aria-hidden="true">
+      <div class="modal" role="dialog" aria-modal="true" aria-label="テンプレ管理">
+        <div class="mhead">
+          <b>🧩 テンプレ管理</b>
+          <button class="btn icon" id="btnCloseManage" type="button" aria-label="閉じる">✕</button>
+        </div>
+        <div class="mbody">
+          <div class="two">
+            <div class="field">
+              <label for="tplName">テンプレ名</label>
+              <input id="tplName" type="text" placeholder="例: ブログ記事構成" />
+            </div>
+            <div class="field">
+              <label for="tplCategory">カテゴリ</label>
+              <input id="tplCategory" type="text" placeholder="例: Writing / Dev / Business" />
+            </div>
+          </div>
+
+          <div class="two">
+            <div class="field">
+              <label for="tplLang">言語</label>
+              <select id="tplLang">
+                <option value="ja">日本語</option>
+                <option value="en">English</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="tplTags">タグ（カンマ区切り）</label>
+              <input id="tplTags" type="text" placeholder="例: ブログ,構成,SEO" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="tplDesc">概要</label>
+            <input id="tplDesc" type="text" placeholder="何に使うテンプレかを短く" />
+          </div>
+
+          <div class="field">
+            <label for="tplBody">テンプレ本文 <span class="hint">{{goal}} {{audience}} {{tone}} {{format}} {{length}} {{context}} {{constraints}} {{examples}}</span></label>
+            <textarea id="tplBody" style="min-height:210px" spellcheck="false"></textarea>
+          </div>
+
+          <div class="row">
+            <button class="btn primary" id="btnSaveTemplate" type="button">💾 保存</button>
+            <button class="btn" id="btnNewTemplate" type="button">➕ 新規</button>
+            <button class="btn danger" id="btnDeleteTemplate" type="button">🗑 削除</button>
+          </div>
+
+          <div class="footer-note">
+            <span class="muted">※テンプレはこの端末のブラウザに保存されます（localStorage）。</span>
+            <span class="muted">ショートカット: <span class="kbd">M</span> で開閉</span>
+          </div>
+        </div>
       </div>
+    </div>
 
-      <p class="small">※メールリンクは <code>mailto:</code> なのでクリックでメールアプリが起動します。</p>
-    </section>
+    <!-- MODAL: Import/Export -->
+    <div class="modal-backdrop" id="ieModalBackdrop" aria-hidden="true">
+      <div class="modal" role="dialog" aria-modal="true" aria-label="インポート/エクスポート">
+        <div class="mhead">
+          <b>⬆⬇ JSON インポート/エクスポート</b>
+          <button class="btn icon" id="btnCloseIE" type="button" aria-label="閉じる">✕</button>
+        </div>
+        <div class="mbody">
+          <div class="two">
+            <div class="field">
+              <label>エクスポート <span class="hint">テンプレをJSONでコピー</span></label>
+              <button class="btn good" id="btnExport" type="button">📤 エクスポート</button>
+              <textarea id="exportArea" class="mono" style="min-height:220px" readonly></textarea>
+              <div class="row tight">
+                <button class="btn small" id="btnCopyExport" type="button">📋 コピー</button>
+                <button class="btn small" id="btnDownloadExport" type="button">⬇ JSON保存</button>
+              </div>
+            </div>
 
-    <footer>
-      <div>© <span id="y"></span> Simple Site</div>
-      <div>Built with HTML + CSS</div>
-    </footer>
+            <div class="field">
+              <label>インポート <span class="hint">JSONを貼って反映</span></label>
+              <button class="btn" id="btnImport" type="button">📥 インポート</button>
+              <textarea id="importArea" class="mono" style="min-height:220px" placeholder='{"templates":[ ... ]}'></textarea>
+              <div class="row tight">
+                <button class="btn small danger" id="btnOverwriteImport" type="button" title="現在のテンプレを置き換える">
+                  ⚠ 置換で反映
+                </button>
+              </div>
+              <div class="hint">通常の「インポート」は既存テンプレに追加します。「置換」は全テンプレを入れ替えます。</div>
+            </div>
+          </div>
+
+          <div class="footer-note">
+            <span class="muted">※取り込めない場合はJSONの形式を確認してください。</span>
+            <span class="muted">ショートカット: <span class="kbd">I</span> で開閉</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 
-  <script>
-    // 年を自動表示
-    document.getElementById("y").textContent = new Date().getFullYear();
+<script>
+(() => {
+  "use strict";
 
-    // ボタン動作（必要に応じて変更）
-    function hello() {
-      alert("こんにちは！おしゃれ版です。");
+  // ---------- Utilities ----------
+  const $ = (sel, el=document) => el.querySelector(sel);
+  const $$ = (sel, el=document) => [...el.querySelectorAll(sel)];
+  const uid = () => Math.random().toString(16).slice(2) + Date.now().toString(16);
+  const nowIso = () => new Date().toISOString();
+  const fmtTime = (iso) => {
+    try{
+      const d = new Date(iso);
+      const pad = (n)=> String(n).padStart(2,"0");
+      return `${d.getFullYear()}/${pad(d.getMonth()+1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }catch{ return iso; }
+  };
+  const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
+
+  const toastEl = $("#toast");
+  let toastTimer = null;
+  const toast = (title, msg="", ms=2200) => {
+    toastEl.innerHTML = `<span class="t">${escapeHtml(title)}</span><span class="m">${escapeHtml(msg)}</span>`;
+    toastEl.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(()=> toastEl.classList.remove("show"), ms);
+  };
+
+  const escapeHtml = (s) => String(s)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+
+  const downloadText = (filename, content, mime="text/plain;charset=utf-8") => {
+    const blob = new Blob([content], {type:mime});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
+
+  const copyToClipboard = async (text) => {
+    try{
+      await navigator.clipboard.writeText(text);
+      return true;
+    }catch{
+      // fallback
+      try{
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        const ok = document.execCommand("copy");
+        ta.remove();
+        return ok;
+      }catch{
+        return false;
+      }
     }
-  </script>
+  };
+
+  // ---------- Storage ----------
+  const KEY = {
+    templates: "prompt_studio_templates_v1",
+    history: "prompt_studio_history_v1",
+    ui: "prompt_studio_ui_v1",
+    inputs: "prompt_studio_inputs_v1"
+  };
+
+  const readJson = (k, fallback) => {
+    try{
+      const raw = localStorage.getItem(k);
+      if(!raw) return fallback;
+      return JSON.parse(raw);
+    }catch{ return fallback; }
+  };
+  const writeJson = (k, v) => {
+    localStorage.setItem(k, JSON.stringify(v));
+  };
+
+  // ---------- Default Templates ----------
+  const DEFAULT_TEMPLATES = [
+    {
+      id: "tpl_blog_outline_ja",
+      name: "ブログ記事の構成（日本語）",
+      category: "Writing",
+      lang: "ja",
+      tags: ["ブログ","構成","SEO"],
+      desc: "記事の骨子→見出し案→執筆方針まで作る",
+      body:
+`あなたは優秀な編集者です。以下の条件でブログ記事の構成を作成してください。
+
+【目的】
+{{goal}}
+
+【対象読者】
+{{audience}}
+
+【トーン】
+{{tone}}
+
+【出力形式】
+{{format}}（見出しはH2/H3で）
+
+【分量】
+{{length}}
+
+【背景/前提】
+{{context}}
+
+【制約・ルール】
+{{constraints}}
+
+【参考例/入力データ】
+{{examples}}
+
+【必須要件】
+1) タイトル案を5つ
+2) 見出し構成（H2/H3）を提示
+3) 各見出しの要点（箇条書き）
+4) 具体例/たとえ話を最低2つ含める
+5) SEO観点のキーワード候補（5〜10個）
+6) 最後に「読者が次に取る行動」の提案を3つ`
+    },
+    {
+      id: "tpl_spec_ja",
+      name: "要件→仕様整理（日本語）",
+      category: "Dev",
+      lang: "ja",
+      tags: ["仕様","要件定義","整理"],
+      desc: "曖昧な要望を仕様に落とし込む質問・前提・決定事項を整理",
+      body:
+`あなたはプロダクトマネージャー兼テックリードです。以下の情報から仕様を整理してください。
+
+【目的】
+{{goal}}
+
+【対象（関係者）】
+{{audience}}
+
+【トーン】
+{{tone}}
+
+【出力形式】
+表形式（項目 / 内容）→ その後に箇条書きで詳細
+
+【背景/前提】
+{{context}}
+
+【制約・ルール】
+{{constraints}}
+
+【参考例/入力データ】
+{{examples}}
+
+【出力してほしい項目】
+- 目的・成功指標（KPI）
+- ユーザー課題 / ユースケース
+- 機能要件 / 非機能要件
+- 画面/入出力（あれば）
+- 例外ケース・エラーハンドリング
+- セキュリティ・権限
+- 未確定事項（質問リスト）
+- 優先度（Must/Should/Could/Won't）
+- 受け入れ条件（テスト観点）`
+    },
+    {
+      id: "tpl_summarize_ja",
+      name: "長文要約（日本語）",
+      category: "Business",
+      lang: "ja",
+      tags: ["要約","議事録","整理"],
+      desc: "重要点・結論・ToDoに分けて要約",
+      body:
+`あなたは要約の専門家です。次のテキストを、読み手がすぐ意思決定できる形に整理してください。
+
+【目的】
+{{goal}}
+
+【対象読者】
+{{audience}}
+
+【トーン】
+{{tone}}
+
+【出力形式】
+1) 3行要約
+2) 重要点（箇条書き）
+3) 争点/リスク
+4) 次アクション（ToDo：担当/期限の提案も）
+5) 用語の簡単な説明（必要なら）
+
+【分量】
+{{length}}
+
+【制約・ルール】
+{{constraints}}
+
+【入力テキスト】
+{{examples}}`
+    },
+    {
+      id: "tpl_email_en",
+      name: "Professional Email (English)",
+      category: "Business",
+      lang: "en",
+      tags: ["email","business","polite"],
+      desc: "Clear subject + concise email with next steps",
+      body:
+`You are an excellent business communicator. Write a professional email.
+
+Goal:
+{{goal}}
+
+Audience / Recipient:
+{{audience}}
+
+Tone:
+{{tone}}
+
+Format:
+- Subject line
+- Greeting
+- 2–5 short paragraphs
+- Bullet list for requests (if any)
+- Clear next steps + deadline suggestion
+- Polite closing
+
+Context:
+{{context}}
+
+Constraints:
+{{constraints}}
+
+Reference / Data:
+{{examples}}`
+    },
+    {
+      id: "tpl_code_review_ja",
+      name: "コードレビュー依頼（日本語）",
+      category: "Dev",
+      lang: "ja",
+      tags: ["レビュー","コード","改善"],
+      desc: "バグ/改善/可読性/セキュリティ観点でレビュー依頼用プロンプト",
+      body:
+`あなたはシニアエンジニアです。以下のコードをレビューしてください。
+
+【目的】
+{{goal}}
+
+【対象読者】
+{{audience}}
+
+【トーン】
+{{tone}}
+
+【出力形式】
+- 指摘一覧（重大度: High/Medium/Low）
+- 改善案（具体的な修正例）
+- リスク（性能/セキュリティ/保守性）
+- 追加で確認したい点（質問）
+
+【制約・ルール】
+{{constraints}}
+
+【コード/情報】
+{{examples}}`
+    }
+  ];
+
+  // ---------- State ----------
+  let state = {
+    templates: [],
+    activeTemplateId: "",
+    history: [],
+    ui: { theme: "dark", filterCategory:"all", filterLang:"ja", search:"" },
+    inputs: {
+      goal:"",
+      audience:"",
+      tone:"丁寧で明快",
+      format:"箇条書き",
+      length:"標準",
+      context:"",
+      constraints:"",
+      examples:""
+    },
+    output: ""
+  };
+
+  const loadState = () => {
+    const templates = readJson(KEY.templates, null);
+    const history = readJson(KEY.history, []);
+    const ui = readJson(KEY.ui, null);
+    const inputs = readJson(KEY.inputs, null);
+
+    state.templates = Array.isArray(templates) && templates.length ? templates : DEFAULT_TEMPLATES;
+    state.history = Array.isArray(history) ? history : [];
+    state.ui = ui ? {...state.ui, ...ui} : state.ui;
+    state.inputs = inputs ? {...state.inputs, ...inputs} : state.inputs;
+
+    if(!state.activeTemplateId){
+      state.activeTemplateId = state.templates[0]?.id || "";
+    }
+
+    // If previously selected template exists, keep it; otherwise set to first
+    const savedActive = (ui && ui.activeTemplateId) ? ui.activeTemplateId : "";
+    if(savedActive && state.templates.some(t=>t.id===savedActive)){
+      state.activeTemplateId = savedActive;
+    }
+  };
+
+  const saveTemplates = () => writeJson(KEY.templates, state.templates);
+  const saveHistory = () => writeJson(KEY.history, state.history);
+  const saveUI = () => writeJson(KEY.ui, {...state.ui, activeTemplateId: state.activeTemplateId});
+  const saveInputs = () => writeJson(KEY.inputs, state.inputs);
+
+  // ---------- Rendering ----------
+  const appEl = $("#app");
+  const templateListEl = $("#templateList");
+  const historyListEl = $("#historyList");
+  const historyCountEl = $("#historyCount");
+  const activeTemplateNameEl = $("#activeTemplateName");
+  const outputEl = $("#output");
+  const metaPillEl = $("#metaPill");
+
+  const rebuildCategoryOptions = () => {
+    const sel = $("#filterCategory");
+    const cats = [...new Set(state.templates.map(t=>t.category || "Other"))].sort((a,b)=>a.localeCompare(b));
+    const current = state.ui.filterCategory || "all";
+    sel.innerHTML = `<option value="all">すべて</option>` + cats.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+    sel.value = cats.includes(current) ? current : "all";
+  };
+
+  const renderTemplates = () => {
+    const q = (state.ui.search || "").trim().toLowerCase();
+    const cat = state.ui.filterCategory || "all";
+    const langFilter = state.ui.filterLang || "ja";
+
+    const filtered = state.templates.filter(t => {
+      const inCat = (cat==="all") ? true : (t.category===cat);
+      const inLang = (langFilter==="any") ? true : (t.lang===langFilter);
+      if(!inCat || !inLang) return false;
+      if(!q) return true;
+      const hay = [
+        t.name, t.desc, t.category, (t.tags||[]).join(",")
+      ].join(" ").toLowerCase();
+      return hay.includes(q);
+    });
+
+    templateListEl.innerHTML = filtered.map(t => {
+      const isActive = t.id === state.activeTemplateId;
+      const tags = (t.tags||[]).slice(0,6).map(x => `<span class="tag">${escapeHtml(x)}</span>`).join("");
+      return `
+        <div class="item ${isActive ? "active" : ""}" data-id="${escapeHtml(t.id)}" role="button" tabindex="0" aria-label="${escapeHtml(t.name)}">
+          <div class="top">
+            <div style="display:flex;flex-direction:column;gap:3px">
+              <b>${escapeHtml(t.name)}</b>
+              <small>${escapeHtml(t.desc || "")}</small>
+            </div>
+            <small class="tag" title="カテゴリ">${escapeHtml(t.category || "Other")}</small>
+          </div>
+          <div class="tags">
+            <span class="tag" title="言語">${t.lang === "en" ? "EN" : "JA"}</span>
+            ${tags}
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    if(filtered.length === 0){
+      templateListEl.innerHTML = `
+        <div class="item" style="cursor:default;">
+          <b>一致するテンプレがありません</b>
+          <small>検索語を変えるか、テンプレ管理で追加してください。</small>
+        </div>
+      `;
+    }
+
+    // Update active template label
+    const active = state.templates.find(t=>t.id===state.activeTemplateId);
+    activeTemplateNameEl.textContent = active ? active.name : "-";
+
+    // Populate category options (kept in sync)
+    rebuildCategoryOptions();
+  };
+
+  const renderHistory = () => {
+    const items = state.history.slice().sort((a,b)=> (b.createdAt||"").localeCompare(a.createdAt||"")).slice(0, 30);
+    historyListEl.innerHTML = items.map(h => {
+      const tname = h.templateName || "—";
+      const dt = fmtTime(h.createdAt);
+      const preview = (h.output||"").slice(0, 140).replace(/\s+/g," ").trim();
+      return `
+        <div class="item" data-hid="${escapeHtml(h.id)}" role="button" tabindex="0" aria-label="履歴: ${escapeHtml(tname)}">
+          <div class="top">
+            <div style="display:flex;flex-direction:column;gap:3px">
+              <b>${escapeHtml(tname)}</b>
+              <small>${escapeHtml(dt)}</small>
+            </div>
+            <small class="tag" title="テンプレ">${escapeHtml(h.templateCategory || "—")}</small>
+          </div>
+          <small class="muted">${escapeHtml(preview)}${h.output && h.output.length>140 ? "…" : ""}</small>
+        </div>
+      `;
+    }).join("");
+
+    const total = state.history.length;
+    historyCountEl.textContent = `items: ${total}`;
+
+    if(items.length === 0){
+      historyListEl.innerHTML = `
+        <div class="item" style="cursor:default;">
+          <b>履歴はまだありません</b>
+          <small>生成した内容を「➕ 履歴」で保存できます。</small>
+        </div>
+      `;
+    }
+  };
+
+  const renderOutput = () => {
+    outputEl.textContent = state.output || "";
+    const tpl = state.templates.find(t=>t.id===state.activeTemplateId);
+    const meta = tpl
+      ? `${tpl.category || "Other"} / ${tpl.lang === "en" ? "EN" : "JA"}`
+      : "—";
+    metaPillEl.textContent = meta;
+  };
+
+  const applyTheme = () => {
+    appEl.setAttribute("data-theme", state.ui.theme || "dark");
+  };
+
+  // ---------- Prompt Generation ----------
+  const fillVars = (templateBody, vars) => {
+    let out = String(templateBody || "");
+    const map = {
+      goal: vars.goal || "",
+      audience: vars.audience || "",
+      tone: vars.tone || "",
+      format: vars.format || "",
+      length: vars.length || "",
+      context: vars.context || "",
+      constraints: vars.constraints || "",
+      examples: vars.examples || ""
+    };
+    // Replace {{key}} with value
+    for(const [k,v] of Object.entries(map)){
+      const re = new RegExp("\\{\\{\\s*" + k + "\\s*\\}\\}", "g");
+      out = out.replace(re, v.trim());
+    }
+    // Cleanup repeated blank lines
+    out = out.replace(/\n{3,}/g, "\n\n").trim();
+    return out;
+  };
+
+  const generate = () => {
+    const tpl = state.templates.find(t=>t.id===state.activeTemplateId);
+    if(!tpl){
+      toast("テンプレが未選択です", "左からテンプレを選んでください。");
+      return;
+    }
+
+    const vars = {...state.inputs};
+    // Basic defaults to prevent empty
+    if(!vars.goal.trim()) vars.goal = "（目的をここに記入）";
+    if(!vars.audience.trim()) vars.audience = "（対象をここに記入）";
+
+    const out = fillVars(tpl.body, vars);
+    state.output = out;
+    renderOutput();
+    toast("生成しました", "コピーや履歴保存ができます。");
+  };
+
+  // ---------- Inputs Binding ----------
+  const bindInputs = () => {
+    const inputMap = [
+      ["#goal","goal"],
+      ["#audience","audience"],
+      ["#tone","tone"],
+      ["#format","format"],
+      ["#length","length"],
+      ["#context","context"],
+      ["#constraints","constraints"],
+      ["#examples","examples"]
+    ];
+
+    for(const [sel, key] of inputMap){
+      const el = $(sel);
+      el.value = state.inputs[key] ?? "";
+      el.addEventListener("input", () => {
+        state.inputs[key] = el.value;
+        saveInputs();
+      });
+      el.addEventListener("change", () => {
+        state.inputs[key] = el.value;
+        saveInputs();
+      });
+    }
+  };
+
+  const resetInputs = () => {
+    state.inputs = {
+      goal:"",
+      audience:"",
+      tone: $("#tone").value || "丁寧で明快",
+      format: $("#format").value || "箇条書き",
+      length: $("#length").value || "標準",
+      context:"",
+      constraints:"",
+      examples:""
+    };
+    bindInputs();
+    saveInputs();
+    toast("入力をクリアしました");
+  };
+
+  const quickFill = () => {
+    state.inputs.goal = "社内向けに新しい手順をわかりやすく説明したい";
+    state.inputs.audience = "初めて作業する担当者（ITが得意ではない人も含む）";
+    state.inputs.tone = "丁寧で明快";
+    state.inputs.format = "ステップ形式";
+    state.inputs.length = "標準";
+    state.inputs.context =
+`- 現場では時間がないため、迷いどころを先回りして説明したい
+- 例外ケースがたまに発生する
+- 必要な準備物や注意事項を最初にまとめたい`;
+    state.inputs.constraints =
+`- 専門用語は必ず一言で補足する
+- 手順は番号付きで、各手順に「目的」を添える
+- よくあるミスと対処を最後にまとめる`;
+    state.inputs.examples =
+`（対象の作業内容や手順メモ、ログ、文章をここに貼り付け）`;
+
+    bindInputs();
+    saveInputs();
+    toast("サンプル入力を入れました");
+  };
+
+  // ---------- Template selection ----------
+  const setActiveTemplate = (id) => {
+    if(!state.templates.some(t=>t.id===id)) return;
+    state.activeTemplateId = id;
+    saveUI();
+    renderTemplates();
+    // Auto-generate to reflect template change (optional)
+    if(state.output && state.output.trim()){
+      generate();
+    }
+  };
+
+  const wireTemplateClicks = () => {
+    templateListEl.addEventListener("click", (e) => {
+      const item = e.target.closest(".item");
+      if(!item) return;
+      const id = item.getAttribute("data-id");
+      if(id) setActiveTemplate(id);
+    });
+    templateListEl.addEventListener("keydown", (e) => {
+      if(e.key !== "Enter" && e.key !== " ") return;
+      const item = e.target.closest(".item");
+      if(!item) return;
+      const id = item.getAttribute("data-id");
+      if(id){
+        e.preventDefault();
+        setActiveTemplate(id);
+      }
+    });
+  };
+
+  // ---------- History ----------
+  const addToHistory = () => {
+    const tpl = state.templates.find(t=>t.id===state.activeTemplateId);
+    if(!tpl){
+      toast("テンプレが未選択です");
+      return;
+    }
+    if(!state.output.trim()){
+      toast("出力が空です", "先に生成してください。");
+      return;
+    }
+    const item = {
+      id: uid(),
+      createdAt: nowIso(),
+      templateId: tpl.id,
+      templateName: tpl.name,
+      templateCategory: tpl.category,
+      inputs: {...state.inputs},
+      output: state.output
+    };
+    state.history.push(item);
+    // Keep last 200
+    if(state.history.length > 200){
+      state.history = state.history.slice(state.history.length - 200);
+    }
+    saveHistory();
+    renderHistory();
+    toast("履歴に保存しました", fmtTime(item.createdAt));
+  };
+
+  const clearHistory = () => {
+    state.history = [];
+    saveHistory();
+    renderHistory();
+    toast("履歴を削除しました");
+  };
+
+  const loadFromHistory = (hid) => {
+    const h = state.history.find(x=>x.id===hid);
+    if(!h) return;
+    // Restore inputs + output
+    state.inputs = {...state.inputs, ...(h.inputs || {})};
+    state.output = h.output || "";
+    // Restore template if exists
+    if(h.templateId && state.templates.some(t=>t.id===h.templateId)){
+      state.activeTemplateId = h.templateId;
+      saveUI();
+    }
+    bindInputs();
+    renderTemplates();
+    renderOutput();
+    toast("履歴を読み込みました", h.templateName || "");
+  };
+
+  const wireHistoryClicks = () => {
+    historyListEl.addEventListener("click", (e) => {
+      const item = e.target.closest(".item");
+      if(!item) return;
+      const hid = item.getAttribute("data-hid");
+      if(hid) loadFromHistory(hid);
+    });
+    historyListEl.addEventListener("keydown", (e) => {
+      if(e.key !== "Enter" && e.key !== " ") return;
+      const item = e.target.closest(".item");
+      if(!item) return;
+      const hid = item.getAttribute("data-hid");
+      if(hid){
+        e.preventDefault();
+        loadFromHistory(hid);
+      }
+    });
+  };
+
+  // ---------- Manage Templates Modal ----------
+  const manageBackdrop = $("#manageModalBackdrop");
+  const openManage = () => {
+    manageBackdrop.classList.add("show");
+    manageBackdrop.setAttribute("aria-hidden","false");
+    // Fill with active template
+    const tpl = state.templates.find(t=>t.id===state.activeTemplateId) || state.templates[0];
+    if(tpl) fillManageForm(tpl);
+  };
+  const closeManage = () => {
+    manageBackdrop.classList.remove("show");
+    manageBackdrop.setAttribute("aria-hidden","true");
+  };
+
+  const fillManageForm = (tpl) => {
+    $("#tplName").value = tpl.name || "";
+    $("#tplCategory").value = tpl.category || "";
+    $("#tplLang").value = tpl.lang || "ja";
+    $("#tplTags").value = (tpl.tags || []).join(", ");
+    $("#tplDesc").value = tpl.desc || "";
+    $("#tplBody").value = tpl.body || "";
+    $("#btnDeleteTemplate").disabled = tpl.id && String(tpl.id).startsWith("tpl_") ? false : false;
+  };
+
+  const makeTemplateFromForm = (existingId=null) => {
+    const name = $("#tplName").value.trim() || "Untitled Template";
+    const category = $("#tplCategory").value.trim() || "Other";
+    const lang = $("#tplLang").value || "ja";
+    const tags = $("#tplTags").value.split(",").map(s=>s.trim()).filter(Boolean);
+    const desc = $("#tplDesc").value.trim();
+    const body = $("#tplBody").value;
+
+    return {
+      id: existingId || uid(),
+      name, category, lang, tags, desc, body
+    };
+  };
+
+  const saveTemplateFromModal = () => {
+    const currentId = state.activeTemplateId;
+    const idx = state.templates.findIndex(t=>t.id===currentId);
+    if(idx === -1){
+      const tpl = makeTemplateFromForm(null);
+      state.templates.unshift(tpl);
+      state.activeTemplateId = tpl.id;
+    }else{
+      const updated = makeTemplateFromForm(currentId);
+      state.templates[idx] = updated;
+    }
+    saveTemplates();
+    saveUI();
+    renderTemplates();
+    toast("テンプレを保存しました");
+  };
+
+  const newTemplate = () => {
+    const tpl = {
+      id: uid(),
+      name: "新規テンプレ",
+      category: "Other",
+      lang: "ja",
+      tags: [],
+      desc: "ここに概要",
+      body:
+`あなたは専門家です。以下の条件で最適な出力を作成してください。
+
+【目的】
+{{goal}}
+
+【対象】
+{{audience}}
+
+【トーン】
+{{tone}}
+
+【出力形式】
+{{format}}
+
+【分量】
+{{length}}
+
+【背景/前提】
+{{context}}
+
+【制約・ルール】
+{{constraints}}
+
+【参考例/入力データ】
+{{examples}}`
+    };
+    state.templates.unshift(tpl);
+    state.activeTemplateId = tpl.id;
+    saveTemplates();
+    saveUI();
+    renderTemplates();
+    fillManageForm(tpl);
+    toast("新規テンプレを作成しました");
+  };
+
+  const deleteActiveTemplate = () => {
+    const id = state.activeTemplateId;
+    if(state.templates.length <= 1){
+      toast("削除できません", "テンプレは最低1つ必要です。");
+      return;
+    }
+    const idx = state.templates.findIndex(t=>t.id===id);
+    if(idx === -1) return;
+
+    const name = state.templates[idx].name;
+    const ok = confirm(`テンプレ「${name}」を削除しますか？`);
+    if(!ok) return;
+
+    state.templates.splice(idx,1);
+    state.activeTemplateId = state.templates[0].id;
+    saveTemplates();
+    saveUI();
+    renderTemplates();
+    toast("削除しました", name);
+  };
+
+  // ---------- Import/Export Modal ----------
+  const ieBackdrop = $("#ieModalBackdrop");
+  const openIE = () => {
+    ieBackdrop.classList.add("show");
+    ieBackdrop.setAttribute("aria-hidden","false");
+    $("#exportArea").value = "";
+  };
+  const closeIE = () => {
+    ieBackdrop.classList.remove("show");
+    ieBackdrop.setAttribute("aria-hidden","true");
+  };
+
+  const exportTemplates = () => {
+    const payload = {
+      app: "Prompt Studio",
+      version: 1,
+      exportedAt: nowIso(),
+      templates: state.templates
+    };
+    const text = JSON.stringify(payload, null, 2);
+    $("#exportArea").value = text;
+    toast("エクスポートしました", "下の欄からコピーできます。");
+  };
+
+  const importTemplates = (overwrite=false) => {
+    const raw = $("#importArea").value.trim();
+    if(!raw){
+      toast("空です", "JSONを貼り付けてください。");
+      return;
+    }
+    try{
+      const obj = JSON.parse(raw);
+      const incoming = obj.templates || obj;
+      if(!Array.isArray(incoming)){
+        toast("形式エラー", "templates配列が見つかりません。");
+        return;
+      }
+
+      // Sanitize: required fields
+      const cleaned = incoming.map(t => ({
+        id: t.id || uid(),
+        name: t.name || "Untitled Template",
+        category: t.category || "Other",
+        lang: (t.lang === "en") ? "en" : "ja",
+        tags: Array.isArray(t.tags) ? t.tags.filter(Boolean) : [],
+        desc: t.desc || "",
+        body: t.body || ""
+      }));
+
+      if(overwrite){
+        state.templates = cleaned.length ? cleaned : state.templates;
+      }else{
+        // merge by id (if conflict, rename)
+        const existingIds = new Set(state.templates.map(t=>t.id));
+        const merged = [...state.templates];
+        for(const t of cleaned){
+          if(existingIds.has(t.id)){
+            // make a new id to avoid overwrite
+            t.id = uid();
+            t.name = t.name + " (Imported)";
+          }
+          merged.push(t);
+        }
+        state.templates = merged;
+      }
+
+      if(!state.templates.some(t=>t.id===state.activeTemplateId)){
+        state.activeTemplateId = state.templates[0]?.id || "";
+      }
+
+      saveTemplates();
+      saveUI();
+      renderTemplates();
+      toast("インポートしました", overwrite ? "置換で反映" : "追加で反映");
+    }catch(err){
+      toast("JSON解析に失敗", String(err && err.message ? err.message : err));
+    }
+  };
+
+  // ---------- Buttons ----------
+  const wireButtons = () => {
+    $("#btnGenerate").addEventListener("click", generate);
+
+    $("#btnCopyOutput").addEventListener("click", async () => {
+      if(!state.output.trim()){
+        toast("出力が空です", "先に生成してください。");
+        return;
+      }
+      const ok = await copyToClipboard(state.output);
+      toast(ok ? "コピーしました" : "コピー失敗", ok ? "クリップボードへ保存しました。" : "ブラウザ権限をご確認ください。");
+    });
+
+    $("#btnCopyOutput2").addEventListener("click", async () => {
+      if(!state.output.trim()){
+        toast("出力が空です", "先に生成してください。");
+        return;
+      }
+      const ok = await copyToClipboard(state.output);
+      toast(ok ? "コピーしました" : "コピー失敗", ok ? "クリップボードへ保存しました。" : "ブラウザ権限をご確認ください。");
+    });
+
+    $("#btnDownload").addEventListener("click", () => {
+      if(!state.output.trim()){
+        toast("出力が空です", "先に生成してください。");
+        return;
+      }
+      const tpl = state.templates.find(t=>t.id===state.activeTemplateId);
+      const safeName = (tpl?.name || "prompt").replace(/[\\/:*?"<>|]/g, "_");
+      const filename = `prompt_${safeName}_${new Date().toISOString().slice(0,10)}.txt`;
+      downloadText(filename, state.output, "text/plain;charset=utf-8");
+      toast("保存しました", filename);
+    });
+
+    $("#btnAddToHistory").addEventListener("click", addToHistory);
+    $("#btnClearHistory").addEventListener("click", () => {
+      const ok = confirm("履歴をすべて削除しますか？");
+      if(ok) clearHistory();
+    });
+
+    $("#btnResetInputs").addEventListener("click", resetInputs);
+    $("#btnQuickFill").addEventListener("click", quickFill);
+
+    $("#btnTheme").addEventListener("click", () => {
+      state.ui.theme = (state.ui.theme === "dark") ? "light" : "dark";
+      applyTheme();
+      saveUI();
+      toast("テーマ切替", state.ui.theme === "dark" ? "ダーク" : "ライト");
+    });
+
+    $("#btnManage").addEventListener("click", openManage);
+    $("#btnCloseManage").addEventListener("click", closeManage);
+    manageBackdrop.addEventListener("click", (e)=> {
+      if(e.target === manageBackdrop) closeManage();
+    });
+
+    $("#btnSaveTemplate").addEventListener("click", () => {
+      saveTemplateFromModal();
+    });
+    $("#btnNewTemplate").addEventListener("click", () => {
+      newTemplate();
+    });
+    $("#btnDeleteTemplate").addEventListener("click", () => {
+      deleteActiveTemplate();
+      // If modal open, refresh form
+      const tpl = state.templates.find(t=>t.id===state.activeTemplateId);
+      if(tpl) fillManageForm(tpl);
+    });
+
+    $("#btnImportExport").addEventListener("click", openIE);
+    $("#btnCloseIE").addEventListener("click", closeIE);
+    ieBackdrop.addEventListener("click", (e)=> {
+      if(e.target === ieBackdrop) closeIE();
+    });
+
+    $("#btnExport").addEventListener("click", exportTemplates);
+    $("#btnCopyExport").addEventListener("click", async () => {
+      const text = $("#exportArea").value.trim();
+      if(!text){ toast("空です", "先にエクスポートしてください。"); return; }
+      const ok = await copyToClipboard(text);
+      toast(ok ? "コピーしました" : "コピー失敗");
+    });
+    $("#btnDownloadExport").addEventListener("click", () => {
+      const text = $("#exportArea").value.trim();
+      if(!text){ toast("空です", "先にエクスポートしてください。"); return; }
+      downloadText(`prompt_studio_templates_${new Date().toISOString().slice(0,10)}.json`, text, "application/json;charset=utf-8");
+      toast("JSONを保存しました");
+    });
+
+    $("#btnImport").addEventListener("click", () => importTemplates(false));
+    $("#btnOverwriteImport").addEventListener("click", () => {
+      const ok = confirm("現在のテンプレをすべて置き換えます。よろしいですか？");
+      if(ok) importTemplates(true);
+    });
+  };
+
+  // ---------- Filters / Search ----------
+  const wireFilters = () => {
+    $("#searchTemplate").addEventListener("input", (e) => {
+      state.ui.search = e.target.value;
+      saveUI();
+      renderTemplates();
+    });
+
+    $("#filterCategory").addEventListener("change", (e) => {
+      state.ui.filterCategory = e.target.value;
+      saveUI();
+      renderTemplates();
+    });
+
+    $("#filterLang").addEventListener("change", (e) => {
+      state.ui.filterLang = e.target.value;
+      saveUI();
+      renderTemplates();
+    });
+  };
+
+  // ---------- Keyboard Shortcuts ----------
+  const wireShortcuts = () => {
+    document.addEventListener("keydown", async (e) => {
+      const isMac = navigator.platform.toLowerCase().includes("mac");
+      const cmd = isMac ? e.metaKey : e.ctrlKey;
+
+      // Ignore shortcuts while typing in inputs except allowed combos
+      const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
+      const inTyping = ["input","textarea","select"].includes(tag);
+
+      // "/" focuses search
+      if(e.key === "/" && !cmd && !e.altKey){
+        if(inTyping) return;
+        e.preventDefault();
+        $("#searchTemplate").focus();
+        return;
+      }
+
+      // Generate: Ctrl/Cmd + Enter
+      if(cmd && e.key === "Enter"){
+        e.preventDefault();
+        generate();
+        return;
+      }
+
+      // Single-key shortcuts (when not typing)
+      if(inTyping) return;
+
+      if(e.key.toLowerCase() === "t"){
+        state.ui.theme = (state.ui.theme === "dark") ? "light" : "dark";
+        applyTheme(); saveUI();
+        toast("テーマ切替", state.ui.theme === "dark" ? "ダーク" : "ライト");
+      }
+      if(e.key.toLowerCase() === "m"){
+        if(manageBackdrop.classList.contains("show")) closeManage();
+        else openManage();
+      }
+      if(e.key.toLowerCase() === "i"){
+        if(ieBackdrop.classList.contains("show")) closeIE();
+        else openIE();
+      }
+      if(e.key.toLowerCase() === "c"){
+        if(!state.output.trim()) { toast("出力が空です"); return; }
+        const ok = await copyToClipboard(state.output);
+        toast(ok ? "コピーしました" : "コピー失敗");
+      }
+      if(e.key.toLowerCase() === "h"){
+        addToHistory();
+      }
+      if(e.key.toLowerCase() === "d"){
+        $("#btnDownload").click();
+      }
+      if(e.key === "Escape"){
+        if(manageBackdrop.classList.contains("show")) closeManage();
+        if(ieBackdrop.classList.contains("show")) closeIE();
+      }
+    });
+  };
+
+  // ---------- Init ----------
+  const init = () => {
+    loadState();
+    applyTheme();
+
+    // Apply saved UI filters/search
+    $("#searchTemplate").value = state.ui.search || "";
+    $("#filterLang").value = state.ui.filterLang || "ja";
+    // category options will be built inside renderTemplates
+    renderTemplates();
+
+    bindInputs();
+    renderHistory();
+    renderOutput();
+
+    wireTemplateClicks();
+    wireHistoryClicks();
+    wireButtons();
+    wireFilters();
+    wireShortcuts();
+
+    // Set filter category from saved UI after options exist
+    rebuildCategoryOptions();
+    if(state.ui.filterCategory){
+      $("#filterCategory").value = state.ui.filterCategory;
+    }
+
+    // Set theme button label/feel
+    $("#autosaveState").textContent = "autosave: on";
+
+    // Auto-generate once on load (optional)
+    generate();
+  };
+
+  // ---------- Modal prefill on open selection change ----------
+  templateListEl.addEventListener("dblclick", () => {
+    // Double-click opens manage modal for active template
+    openManage();
+  });
+
+  // When active template changes while manage modal open, keep form in sync
+  const observer = new MutationObserver(() => {
+    if(manageBackdrop.classList.contains("show")){
+      const tpl = state.templates.find(t=>t.id===state.activeTemplateId);
+      if(tpl) fillManageForm(tpl);
+    }
+  });
+  observer.observe(templateListEl, {childList:true, subtree:true});
+
+  init();
+})();
+</script>
 </body>
 </html>
