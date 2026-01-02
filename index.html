@@ -3,105 +3,478 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>シンプルページ</title>
+  <title>Simple Site</title>
+  <meta name="description" content="白背景のシンプルでおしゃれな1ページサイト" />
   <style>
-    /* 白い背景・シンプルな見た目 */
-    :root { color-scheme: light; }
-    body {
+    :root{
+      color-scheme: light;
+
+      /* Design tokens */
+      --bg: #ffffff;
+      --text: #0b1220;
+      --muted: #5b6475;
+      --line: rgba(15, 23, 42, .12);
+      --card: rgba(255,255,255,.9);
+
+      --shadow: 0 14px 35px rgba(2, 6, 23, .10);
+      --shadow-sm: 0 8px 18px rgba(2, 6, 23, .08);
+
+      --radius: 18px;
+      --radius-lg: 26px;
+
+      /* Accent (控えめに) */
+      --accent1: #4f46e5; /* indigo */
+      --accent2: #06b6d4; /* cyan */
+      --accent3: #22c55e; /* green */
+    }
+
+    *{ box-sizing: border-box; }
+    html{ scroll-behavior: smooth; }
+    body{
       margin: 0;
-      background: #ffffff;
-      color: #111111;
+      background: var(--bg);
+      color: var(--text);
       font-family: system-ui, -apple-system, "Segoe UI", "Noto Sans JP", sans-serif;
-      line-height: 1.6;
+      line-height: 1.7;
+      letter-spacing: .01em;
     }
-    .wrap {
-      max-width: 900px;
+
+    /* Subtle background glow */
+    .bg-glow{
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: -1;
+    }
+    .bg-glow::before,
+    .bg-glow::after{
+      content:"";
+      position: absolute;
+      width: 520px;
+      height: 520px;
+      border-radius: 999px;
+      filter: blur(60px);
+      opacity: .18;
+      transform: translate3d(0,0,0);
+    }
+    .bg-glow::before{
+      top: -200px;
+      right: -220px;
+      background: radial-gradient(circle at 30% 30%, var(--accent2), transparent 60%),
+                  radial-gradient(circle at 70% 70%, var(--accent1), transparent 60%);
+    }
+    .bg-glow::after{
+      bottom: -240px;
+      left: -240px;
+      background: radial-gradient(circle at 30% 30%, var(--accent3), transparent 62%),
+                  radial-gradient(circle at 70% 70%, var(--accent2), transparent 62%);
+    }
+
+    .wrap{
+      max-width: 1024px;
       margin: 0 auto;
-      padding: 40px 20px;
+      padding: 28px 18px 56px;
     }
-    header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+
+    /* Top bar */
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
       gap: 16px;
-      border-bottom: 1px solid #eaeaea;
-      padding-bottom: 16px;
-      margin-bottom: 28px;
+      padding: 10px 6px 22px;
     }
-    .brand {
-      font-weight: 700;
-      letter-spacing: 0.02em;
+    .brand{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      font-weight: 800;
+      letter-spacing: .02em;
     }
-    nav a {
-      color: inherit;
-      text-decoration: none;
-      margin-left: 14px;
-      font-size: 14px;
-    }
-    nav a:hover { text-decoration: underline; }
-
-    h1 {
-      font-size: 28px;
-      margin: 0 0 10px;
-    }
-    p { margin: 0 0 16px; }
-
-    .card {
-      border: 1px solid #eaeaea;
+    .logo{
+      width: 34px;
+      height: 34px;
       border-radius: 12px;
-      padding: 18px;
-      background: #fff;
+      background:
+        linear-gradient(135deg, rgba(79,70,229,.95), rgba(6,182,212,.9));
+      box-shadow: 0 10px 25px rgba(79,70,229,.18);
     }
-    .btn {
-      display: inline-block;
-      border: 1px solid #111;
-      background: #111;
-      color: #fff;
-      padding: 10px 14px;
-      border-radius: 10px;
-      text-decoration: none;
+    nav a{
+      color: var(--muted);
+      text-decoration:none;
       font-size: 14px;
-      cursor: pointer;
+      padding: 8px 10px;
+      border-radius: 999px;
+      transition: background .2s ease, color .2s ease;
     }
-    .btn:hover { opacity: 0.9; }
+    nav a:hover{
+      background: rgba(2,6,23,.05);
+      color: var(--text);
+    }
 
-    footer {
-      margin-top: 28px;
-      padding-top: 16px;
-      border-top: 1px solid #eaeaea;
+    /* Hero */
+    .hero{
+      position: relative;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      background: linear-gradient(180deg, rgba(255,255,255,.86), rgba(255,255,255,.72));
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      padding: 26px 22px;
+    }
+    .hero::before{
+      content:"";
+      position:absolute;
+      inset: -2px;
+      background: linear-gradient(135deg, rgba(79,70,229,.18), rgba(6,182,212,.14), rgba(34,197,94,.12));
+      z-index: 0;
+    }
+    .hero-inner{
+      position: relative;
+      z-index: 1;
+      border-radius: calc(var(--radius-lg) - 6px);
+      background: rgba(255,255,255,.86);
+      border: 1px solid rgba(255,255,255,.65);
+      padding: 26px 22px;
+      backdrop-filter: blur(10px);
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
       font-size: 12px;
-      color: #555;
+      color: rgba(15,23,42,.75);
+      border: 1px solid rgba(15,23,42,.12);
+      background: rgba(255,255,255,.8);
+      padding: 6px 10px;
+      border-radius: 999px;
+    }
+    .dot{
+      width: 8px; height: 8px;
+      border-radius: 99px;
+      background: linear-gradient(135deg, var(--accent1), var(--accent2));
+      box-shadow: 0 0 0 4px rgba(79,70,229,.12);
+    }
+
+    h1{
+      margin: 12px 0 8px;
+      font-size: clamp(26px, 3.2vw, 40px);
+      line-height: 1.2;
+      letter-spacing: .01em;
+    }
+    .lead{
+      margin: 0 0 18px;
+      color: var(--muted);
+      font-size: 15px;
+      max-width: 62ch;
+    }
+
+    .actions{
+      display:flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      text-decoration:none;
+      border: 1px solid var(--line);
+      cursor:pointer;
+      transition: transform .12s ease, box-shadow .12s ease, background .12s ease;
+      user-select:none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn:active{ transform: translateY(1px); }
+
+    .btn-primary{
+      color: #fff;
+      border-color: rgba(79,70,229,.2);
+      background: linear-gradient(135deg, var(--accent1), var(--accent2));
+      box-shadow: 0 10px 24px rgba(79,70,229,.22);
+    }
+    .btn-primary:hover{ box-shadow: 0 14px 30px rgba(79,70,229,.26); }
+
+    .btn-ghost{
+      color: var(--text);
+      background: rgba(255,255,255,.75);
+    }
+    .btn-ghost:hover{
+      background: rgba(2,6,23,.04);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .icon{
+      width: 16px;
+      height: 16px;
+      display:inline-block;
+    }
+
+    /* Sections */
+    .grid{
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 16px;
+      margin-top: 16px;
+    }
+    @media (max-width: 860px){
+      .grid{ grid-template-columns: 1fr; }
+    }
+
+    .card{
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.82);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      padding: 18px 16px;
+    }
+    .card h2{
+      margin: 0 0 6px;
+      font-size: 16px;
+      letter-spacing: .01em;
+    }
+    .card p{
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .feature-list{
+      margin: 12px 0 0;
+      padding: 0;
+      list-style: none;
+      display:grid;
+      gap: 10px;
+    }
+    .feature{
+      display:flex;
+      gap: 12px;
+      align-items:flex-start;
+      padding: 12px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(15,23,42,.10);
+      background: rgba(255,255,255,.76);
+    }
+    .feature b{
+      display:block;
+      margin-bottom: 2px;
+      font-size: 14px;
+    }
+    .feature span{
+      color: var(--muted);
+      font-size: 13px;
+      display:block;
+    }
+    .feature .pill{
+      flex: 0 0 auto;
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      display:grid;
+      place-items:center;
+      background: linear-gradient(135deg, rgba(79,70,229,.14), rgba(6,182,212,.12));
+      border: 1px solid rgba(79,70,229,.18);
+    }
+
+    /* Contact */
+    .contact{
+      display:flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+      align-items:center;
+    }
+    .contact a{
+      color: var(--text);
+      text-decoration:none;
+      border-bottom: 1px dashed rgba(2,6,23,.25);
+    }
+    .contact a:hover{
+      border-bottom-color: rgba(2,6,23,.6);
+    }
+    .small{
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+
+    footer{
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+      display:flex;
+      justify-content:space-between;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 12px;
+      flex-wrap: wrap;
+    }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce){
+      html{ scroll-behavior: auto; }
+      .btn{ transition: none; }
     }
   </style>
 </head>
+
 <body>
+  <div class="bg-glow" aria-hidden="true"></div>
+
   <div class="wrap">
-    <header>
-      <div class="brand">Simple Site</div>
-      <nav>
-        <a href="#about">概要あいうえお</a>
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>Simple Site</div>
+      </div>
+      <nav aria-label="メニュー">
+        <a href="#about">概要</a>
+        <a href="#features">特徴</a>
         <a href="#contact">連絡</a>
       </nav>
-    </header>
+    </div>
 
-    <main>
-      <h1>シンプルな白背景ページ</h1>
-      <p>このページは、最低限の構成（ヘッダー・本文・フッター）だけで作っています。</p>
+    <section class="hero" aria-label="ヒーロー">
+      <div class="hero-inner">
+        <div class="badge"><span class="dot" aria-hidden="true"></span> GitHub Pages で公開中</div>
 
+        <h1>白背景のまま、<br />上品に“おしゃれ”な1ページ</h1>
+        <p class="lead">
+          余白・影・控えめなグラデーションで、シンプルなのに雰囲気が出るデザインです。
+          文章やリンクを差し替えるだけで、名刺代わりのサイトになります。
+        </p>
+
+        <div class="actions">
+          <a class="btn btn-primary" href="#contact">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M4 6h16v12H4V6Z" stroke="white" stroke-width="2" />
+              <path d="m4 7 8 6 8-6" stroke="white" stroke-width="2" />
+            </svg>
+            連絡する
+          </a>
+
+          <button class="btn btn-ghost" type="button" onclick="hello()">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M12 21s7-4.35 7-11a4 4 0 0 0-7-2 4 4 0 0 0-7 2c0 6.65 7 11 7 11Z" stroke="currentColor" stroke-width="2"/>
+            </svg>
+            ボタン
+          </button>
+        </div>
+
+        <p class="small">※文言は自由に変更できます（このままでも動きます）。</p>
+      </div>
+    </section>
+
+    <div class="grid">
       <section id="about" class="card" aria-label="概要">
-        <h2 style="margin:0 0 8px; font-size:18px;">概要</h2>
-        <p style="margin:0 0 12px;">文章やリンクを追加して、用途に合わせて拡張できます。</p>
-        <button class="btn" type="button" onclick="hello()">ボタン</button>
+        <h2>概要</h2>
+        <p>
+          ここに自己紹介やサイトの目的を書きます。たとえば「仕事の実績」「趣味」「連絡先」など。
+          文章は短めにすると、より洗練されて見えます。
+        </p>
+
+        <ul class="feature-list" style="margin-top:14px;">
+          <li class="feature">
+            <div class="pill" aria-hidden="true">
+              <svg class="icon" viewBox="0 0 24 24" fill="none">
+                <path d="M7 12l3 3 7-7" stroke="currentColor" stroke-width="2" />
+              </svg>
+            </div>
+            <div>
+              <b>シンプル運用</b>
+              <span>HTMLを編集してコミットするだけで、自動で反映されます。</span>
+            </div>
+          </li>
+          <li class="feature">
+            <div class="pill" aria-hidden="true">
+              <svg class="icon" viewBox="0 0 24 24" fill="none">
+                <path d="M12 3v18" stroke="currentColor" stroke-width="2"/>
+                <path d="M3 12h18" stroke="currentColor" stroke-width="2"/>
+              </svg>
+            </div>
+            <div>
+              <b>増やしやすい</b>
+              <span>セクション追加・画像追加・リンク追加が簡単です。</span>
+            </div>
+          </li>
+        </ul>
       </section>
 
-      <section id="contact" style="margin-top:18px;">
-        <h2 style="margin:0 0 8px; font-size:18px;">連絡</h2>
-        <p style="margin:0;">メール：example@example.com</p>
+      <section id="features" class="card" aria-label="特徴">
+        <h2>特徴</h2>
+        <p>よく使う要素をまとめてあります。必要に応じて残したり消したりできます。</p>
+
+        <ul class="feature-list">
+          <li class="feature">
+            <div class="pill" aria-hidden="true">
+              <svg class="icon" viewBox="0 0 24 24" fill="none">
+                <path d="M4 6h16" stroke="currentColor" stroke-width="2"/>
+                <path d="M4 12h10" stroke="currentColor" stroke-width="2"/>
+                <path d="M4 18h16" stroke="currentColor" stroke-width="2"/>
+              </svg>
+            </div>
+            <div>
+              <b>読みやすい文字組み</b>
+              <span>見出し・本文・余白のバランスを調整しています。</span>
+            </div>
+          </li>
+
+          <li class="feature">
+            <div class="pill" aria-hidden="true">
+              <svg class="icon" viewBox="0 0 24 24" fill="none">
+                <path d="M12 2 2 7l10 5 10-5-10-5Z" stroke="currentColor" stroke-width="2"/>
+                <path d="M2 17l10 5 10-5" stroke="currentColor" stroke-width="2"/>
+                <path d="M2 12l10 5 10-5" stroke="currentColor" stroke-width="2"/>
+              </svg>
+            </div>
+            <div>
+              <b>カードUI</b>
+              <span>影と境界線で、軽やかな情報整理ができます。</span>
+            </div>
+          </li>
+
+          <li class="feature">
+            <div class="pill" aria-hidden="true">
+              <svg class="icon" viewBox="0 0 24 24" fill="none">
+                <path d="M12 8v8" stroke="currentColor" stroke-width="2"/>
+                <path d="M8 12h8" stroke="currentColor" stroke-width="2"/>
+                <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke="currentColor" stroke-width="2"/>
+              </svg>
+            </div>
+            <div>
+              <b>控えめアクセント</b>
+              <span>白背景のまま、雰囲気だけ上げています。</span>
+            </div>
+          </li>
+        </ul>
       </section>
-    </main>
+    </div>
+
+    <section id="contact" class="card" aria-label="連絡" style="margin-top:16px;">
+      <h2>連絡</h2>
+      <p>連絡先はここを編集してください。</p>
+
+      <div class="contact" style="margin-top:10px;">
+        <span>メール：</span>
+        <a href="mailto:example@example.com">example@example.com</a>
+        <span style="color:rgba(15,23,42,.20);">|</span>
+        <a href="https://github.com/" target="_blank" rel="noopener noreferrer">GitHub</a>
+      </div>
+
+      <p class="small">※メールリンクは <code>mailto:</code> なのでクリックでメールアプリが起動します。</p>
+    </section>
 
     <footer>
-      © <span id="y"></span> Simple Site
+      <div>© <span id="y"></span> Simple Site</div>
+      <div>Built with HTML + CSS</div>
     </footer>
   </div>
 
@@ -111,9 +484,8 @@
 
     // ボタン動作（必要に応じて変更）
     function hello() {
-      alert("こんにちは！");
+      alert("こんにちは！おしゃれ版です。");
     }
   </script>
 </body>
 </html>
-
